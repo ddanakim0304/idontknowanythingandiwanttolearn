@@ -116,16 +116,6 @@ const ResultsPage: React.FC = () => {
     }
   };
 
-  const getResourceButtonText = (url: string) => {
-    if (url.includes('youtube.com')) {
-      return 'Search YouTube';
-    } else if (url.includes('google.com')) {
-      return 'Search Google';
-    } else {
-      return 'Find Resource';
-    }
-  };
-
   const filters = [
     { label: 'Last Week', param: 'time=7d' },
     { label: 'Beginner-Friendly', param: 'level=beginner' },
@@ -294,6 +284,15 @@ const ResultsPage: React.FC = () => {
           <h1 className="text-3xl font-bold text-gray-800 mb-2">
             Learning: <span className="text-primary-blue">{query}</span>
           </h1>
+          {loading && (
+            <div className="flex items-center gap-2 text-gray-600">
+              <Loader2 size={16} className="animate-spin" />
+              <span>Generating your personalized learning plan...</span>
+            </div>
+          )}
+          {!loading && !error && planData && (
+            <p className="text-gray-600">Your personalized {planDuration}-week learning roadmap 🎯</p>
+          )}
         </div>
 
         {/* Loading State */}
@@ -418,7 +417,7 @@ const ResultsPage: React.FC = () => {
                                           rel="noopener noreferrer"
                                           className="inline-flex items-center gap-2 px-3 py-1 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors text-sm font-medium"
                                         >
-                                          {getResourceButtonText(step.resourceURL)}
+                                          Find Resource
                                           <ExternalLink size={12} />
                                         </a>
                                       )}

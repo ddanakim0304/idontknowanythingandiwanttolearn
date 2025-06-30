@@ -71,16 +71,6 @@ const InsightsPage: React.FC = () => {
     }
   };
 
-  const getResourceButtonText = (url: string) => {
-    if (url.includes('youtube.com')) {
-      return 'Search YouTube';
-    } else if (url.includes('google.com')) {
-      return 'Search Google';
-    } else {
-      return 'Find Resource';
-    }
-  };
-
   // Loading component with progress
   const LoadingState = () => (
     <div className="text-center py-12">
@@ -254,7 +244,7 @@ const InsightsPage: React.FC = () => {
                       rel="noopener noreferrer"
                       className="inline-flex items-center gap-2 px-3 py-1 bg-primary-blue text-white rounded-lg hover:bg-primary-blue-hover transition-colors text-sm font-medium"
                     >
-                      {getResourceButtonText(resource.url)}
+                      Find Resource
                       <ExternalLink size={12} />
                     </a>
                   </div>
