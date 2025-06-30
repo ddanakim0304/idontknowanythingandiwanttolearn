@@ -5,7 +5,7 @@ import { getRichRedditContextForTopic } from '../services/redditService';
 import { generateLearningGuide } from '../services/geminiService';
 import type { LearningGuide, ProgressUpdate } from '../types';
 
-const NewResultsPage: React.FC = () => {
+const ResultsPage: React.FC = () => {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState('');
