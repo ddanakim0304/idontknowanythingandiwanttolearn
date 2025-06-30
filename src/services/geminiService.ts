@@ -118,6 +118,12 @@ export const getRelevantSubreddits = async (topic: string): Promise<string[]> =>
 
     } catch (error) {
         console.error("Error generating relevant subreddits:", error);
+        
+        // Check for quota exceeded error
+        if (error instanceof Error && (error.message.includes('429') || error.message.includes('quota') || error.message.includes('exceeded your current quota'))) {
+            throw new Error("You've reached your daily limit for AI requests. Please check your Google AI Studio account at https://aistudio.google.com/ to view your quota and billing details, or try again tomorrow.");
+        }
+        
         return [];
     }
 };
@@ -158,6 +164,12 @@ export const generateLearningGuide = async (topic: string, weeks: number, hoursP
 
   } catch (error) {
     console.error("Error generating learning guide:", error);
+    
+    // Check for quota exceeded error
+    if (error instanceof Error && (error.message.includes('429') || error.message.includes('quota') || error.message.includes('exceeded your current quota'))) {
+        throw new Error("You've reached your daily limit for AI requests. Please check your Google AI Studio account at https://aistudio.google.com/ to view your quota and billing details, or try again tomorrow.");
+    }
+    
     if (error instanceof Error && error.message.includes('JSON')) {
         throw new Error("The AI returned a response that we couldn't understand. Please try a different topic or try again.");
     }
