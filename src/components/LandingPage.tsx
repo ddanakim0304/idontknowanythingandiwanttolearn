@@ -1,9 +1,11 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Search, Dice1 } from 'lucide-react';
+import { Search, Dice1, BookOpen, Zap } from 'lucide-react';
+import type { SearchMode } from '../types';
 
 const LandingPage: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState('');
+  const [searchMode, setSearchMode] = useState<SearchMode>('study-plan');
   const navigate = useNavigate();
 
   const exampleTopics = ['Autodesk Maya', 'Python', 'Cooking', 'Playing Ukulele', 'Photography'];
@@ -11,7 +13,8 @@ const LandingPage: React.FC = () => {
   const handleSearch = (query?: string) => {
     const searchTerm = query || searchQuery;
     if (searchTerm.trim()) {
-      navigate(`/results?q=${encodeURIComponent(searchTerm)}`);
+      const route = searchMode === 'study-plan' ? '/results' : '/insights';
+      navigate(`${route}?q=${encodeURIComponent(searchTerm)}`);
     }
   };
 
@@ -37,12 +40,57 @@ const LandingPage: React.FC = () => {
           </h1>
         </div>
 
+        {/* Mode Toggle */}
+        <div className="mb-8">
+          <div className="inline-flex bg-gray-100 rounded-custom p-1 mb-6">
+            <button
+              onClick={() => setSearchMode('study-plan')}
+              className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
+                searchMode === 'study-plan'
+                  ? 'bg-white text-primary-blue shadow-gentle'
+                  : 'text-gray-600 hover:text-gray-800'
+              }`}
+            >
+              <BookOpen size={16} />
+              Study Plan
+            </button>
+            <button
+              onClick={() => setSearchMode('quick-insights')}
+              className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
+                searchMode === 'quick-insights'
+                  ? 'bg-white text-primary-blue shadow-gentle'
+                  : 'text-gray-600 hover:text-gray-800'
+              }`}
+            >
+              <Zap size={16} />
+              Quick Insights
+            </button>
+          </div>
+
+          {/* Mode Description */}
+          <div className="mb-6">
+            {searchMode === 'study-plan' ? (
+              <p className="text-gray-600 text-sm">
+                Get a personalized week-by-week learning roadmap with resources and progress tracking
+              </p>
+            ) : (
+              <p className="text-gray-600 text-sm">
+                Get instant insights, key points, and curated advice from Reddit communities
+              </p>
+            )}
+          </div>
+        </div>
+
         {/* Search Section */}
         <div className="mb-8">
           <div className="relative mb-6">
             <input
               type="text"
-              placeholder="I don't know anything and I want to learn…"
+              placeholder={
+                searchMode === 'study-plan' 
+                  ? "I don't know anything and I want to learn…"
+                  : "What do you want quick insights about?"
+              }
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               onKeyPress={(e) => e.key === 'Enter' && handleSearch()}

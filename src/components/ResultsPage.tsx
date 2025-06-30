@@ -1,27 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { Search, ArrowLeft, Lightbulb, ExternalLink, Filter, Calendar, Clock, ChevronDown, ChevronRight, CheckCircle2, Circle, Play, BookOpen, MessageCircle, Zap, Loader2 } from 'lucide-react';
+import { Search, ArrowLeft, Lightbulb, ExternalLink, Filter, Calendar, Clock, ChevronDown, ChevronRight, CheckCircle2, Circle, Play, BookOpen, MessageCircle, Zap, Loader2, AlertCircle } from 'lucide-react';
+import { getRichRedditContextForTopic } from '../services/redditService';
+import { generateLearningGuide } from '../services/geminiService';
+import type { LearningGuide, ProgressUpdate } from '../types';
 
-interface WeeklyPlan {
-  week: number;
-  title: string;
-  description: string;
-  items: {
-    title: string;
-    description: string;
-    url: string;
-    type: 'Video' | 'Forum' | 'Article' | 'Practice' | 'Beginner Tip';
-    duration?: string;
-    completed?: boolean;
-  }[];
-}
-
-interface PlanResponse {
-  aiSummary: string;
-  weeklyPlan: WeeklyPlan[];
-}
-
-const ResultsPage: React.FC = () => {
+const NewResultsPage: React.FC = () => {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState('');
@@ -33,9 +17,10 @@ const ResultsPage: React.FC = () => {
   const [completedItems, setCompletedItems] = useState<Set<string>>(new Set());
   
   // New state for API data
-  const [planData, setPlanData] = useState<PlanResponse | null>(null);
+  const [planData, setPlanData] = useState<LearningGuide | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [progress, setProgress] = useState<ProgressUpdate>({ message: '', percentage: 0 });
 
   const query = searchParams.get('q') || '';
 
@@ -49,17 +34,24 @@ const ResultsPage: React.FC = () => {
   const fetchLearningPlan = async (topic: string) => {
     setLoading(true);
     setError(null);
+    setPlanData(null);
     
     try {
-      const response = await fetch(`http://localhost:3001/api/plan?topic=${encodeURIComponent(topic)}`);
+      // Step 1: Get Reddit context
+      setProgress({ message: 'Starting search...', percentage: 0 });
+      const redditContext = await getRichRedditContextForTopic(topic, setProgress);
       
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || 'Failed to generate learning plan');
+      if (!redditContext) {
+        throw new Error('No relevant Reddit posts found for this topic. Try a different search term.');
       }
+
+      // Step 2: Generate learning guide
+      setProgress({ message: '🧠 AI is crafting your personalized learning plan...', percentage: 90 });
+      const guide = await generateLearningGuide(topic, planDuration, dailyTime, redditContext);
       
-      const data: PlanResponse = await response.json();
-      setPlanData(data);
+      setPlanData(guide);
+      setProgress({ message: '✅ Your learning plan is ready!', percentage: 100 });
+      
     } catch (err) {
       console.error('Error fetching learning plan:', err);
       setError(err instanceof Error ? err.message : 'Could not generate plan – please try again.');
@@ -108,7 +100,7 @@ const ResultsPage: React.FC = () => {
       case 'Forum': return <MessageCircle size={14} className="text-blue-500" />;
       case 'Article': return <BookOpen size={14} className="text-green-500" />;
       case 'Practice': return <Zap size={14} className="text-yellow-500" />;
-      case 'Beginner Tip': return <Lightbulb size={14} className="text-purple-500" />;
+      case 'Tip': return <Lightbulb size={14} className="text-purple-500" />;
       default: return <BookOpen size={14} className="text-gray-500" />;
     }
   };
@@ -119,7 +111,7 @@ const ResultsPage: React.FC = () => {
       case 'Forum': return 'bg-blue-100 text-blue-700';
       case 'Article': return 'bg-green-100 text-green-700';
       case 'Practice': return 'bg-yellow-100 text-yellow-700';
-      case 'Beginner Tip': return 'bg-purple-100 text-purple-700';
+      case 'Tip': return 'bg-purple-100 text-purple-700';
       default: return 'bg-gray-100 text-gray-700';
     }
   };
@@ -131,19 +123,30 @@ const ResultsPage: React.FC = () => {
   ];
 
   const weeklyPlan = planData?.weeklyPlan || [];
-  const totalItems = weeklyPlan.reduce((sum, week) => sum + week.items.length, 0);
+  const totalItems = weeklyPlan.reduce((sum, week) => sum + week.steps.length, 0);
   const completedCount = completedItems.size;
   const progressPercentage = totalItems > 0 ? (completedCount / totalItems) * 100 : 0;
 
-  // Loading skeleton component
-  const LoadingSkeleton = () => (
-    <div className="animate-pulse">
-      <div className="h-8 bg-gray-200 rounded mb-4"></div>
-      <div className="h-32 bg-gray-200 rounded mb-8"></div>
-      <div className="space-y-4">
-        {[1, 2, 3, 4].map(i => (
-          <div key={i} className="h-24 bg-gray-200 rounded"></div>
-        ))}
+  // Loading component with progress
+  const LoadingState = () => (
+    <div className="text-center py-12">
+      <div className="max-w-md mx-auto">
+        <div className="mb-6">
+          <Loader2 size={48} className="animate-spin text-primary-blue mx-auto mb-4" />
+          <h3 className="text-xl font-semibold text-gray-800 mb-2">Generating Your Learning Plan</h3>
+          <p className="text-gray-600 mb-4">{progress.message}</p>
+        </div>
+        
+        <div className="w-full bg-gray-200 rounded-full h-3 mb-4">
+          <div 
+            className="bg-primary-blue h-3 rounded-full transition-all duration-500 ease-out"
+            style={{ width: `${progress.percentage}%` }}
+          ></div>
+        </div>
+        
+        <p className="text-sm text-gray-500">
+          This usually takes 30-60 seconds as we analyze Reddit discussions and craft your personalized plan.
+        </p>
       </div>
     </div>
   );
@@ -152,7 +155,7 @@ const ResultsPage: React.FC = () => {
   const ErrorMessage = () => (
     <div className="bg-red-50 border-l-4 border-red-400 rounded-custom p-6 mb-8">
       <div className="flex items-start gap-3">
-        <div className="text-red-600">⚠️</div>
+        <AlertCircle className="text-red-600 mt-1" size={20} />
         <div>
           <p className="text-red-700 font-medium">Oops! Something went wrong</p>
           <p className="text-red-600 mt-1">{error}</p>
@@ -199,7 +202,7 @@ const ResultsPage: React.FC = () => {
           </div>
 
           {/* Time Commitment Summary */}
-          {!loading && !error && (
+          {!loading && !error && planData && (
             <div className="flex items-center justify-between">
               <div 
                 className="flex items-center gap-3 bg-primary-blue-light px-4 py-2 rounded-custom cursor-pointer hover:bg-blue-100 transition-colors"
@@ -262,7 +265,10 @@ const ResultsPage: React.FC = () => {
                 </div>
               </div>
               <button 
-                onClick={() => setShowTimeEditor(false)}
+                onClick={() => {
+                  setShowTimeEditor(false);
+                  fetchLearningPlan(query);
+                }}
                 className="mt-3 px-4 py-2 bg-primary-blue text-white rounded-lg hover:bg-primary-blue-hover transition-colors text-sm"
               >
                 Update Plan
@@ -273,31 +279,6 @@ const ResultsPage: React.FC = () => {
       </header>
 
       <main className="max-w-4xl mx-auto px-4 py-8">
-        {/* Filter Bar */}
-        {!loading && !error && (
-          <div className="mb-8">
-            <div className="flex flex-wrap items-center gap-3 mb-4">
-              <div className="flex items-center gap-2 text-gray-600">
-                <Filter size={16} />
-                <span className="text-sm font-medium">Filters:</span>
-              </div>
-              {filters.map((filter) => (
-                <button
-                  key={filter.param}
-                  onClick={() => toggleFilter(filter.param)}
-                  className={`px-3 py-1 rounded-full text-sm transition-all duration-200 ${
-                    activeFilters.includes(filter.param)
-                      ? 'bg-primary-blue text-white'
-                      : 'bg-white text-gray-600 hover:bg-primary-blue-light'
-                  }`}
-                >
-                  {filter.label}
-                </button>
-              ))}
-            </div>
-          </div>
-        )}
-
         {/* Results Header */}
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-gray-800 mb-2">
@@ -309,13 +290,13 @@ const ResultsPage: React.FC = () => {
               <span>Generating your personalized learning plan...</span>
             </div>
           )}
-          {!loading && !error && (
+          {!loading && !error && planData && (
             <p className="text-gray-600">Your personalized {planDuration}-week learning roadmap 🎯</p>
           )}
         </div>
 
         {/* Loading State */}
-        {loading && <LoadingSkeleton />}
+        {loading && <LoadingState />}
 
         {/* Error State */}
         {error && <ErrorMessage />}
@@ -330,8 +311,20 @@ const ResultsPage: React.FC = () => {
                   📚
                 </div>
                 <div>
-                  <h2 className="text-xl font-semibold text-gray-800 mb-2">TL;DR - Best Advice</h2>
-                  <p className="text-gray-700 leading-relaxed">{planData.aiSummary}</p>
+                  <h2 className="text-xl font-semibold text-gray-800 mb-2">TL;DR - Best Advice from Reddit</h2>
+                  <p className="text-gray-700 leading-relaxed">{planData.summary}</p>
+                  {planData.sources.length > 0 && (
+                    <div className="mt-3">
+                      <p className="text-sm text-gray-600 mb-2">Sources from:</p>
+                      <div className="flex flex-wrap gap-2">
+                        {planData.sources.map((source, index) => (
+                          <span key={index} className="px-2 py-1 bg-white rounded-full text-xs text-gray-600 border">
+                            {source}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  )}
                 </div>
               </div>
             </div>
@@ -351,13 +344,12 @@ const ResultsPage: React.FC = () => {
                           {week.week}
                         </div>
                         <div className="text-left">
-                          <h3 className="text-lg font-semibold text-gray-800">Week {week.week}: {week.title}</h3>
-                          <p className="text-gray-600 text-sm">{week.description}</p>
+                          <h3 className="text-lg font-semibold text-gray-800">{week.title}</h3>
                         </div>
                       </div>
                       <div className="flex items-center gap-2">
                         <span className="text-xs text-gray-500">
-                          {week.items.filter(item => completedItems.has(`${week.week}-${item.title}`)).length}/{week.items.length}
+                          {week.steps.filter(step => completedItems.has(`${week.week}-${step.title}`)).length}/{week.steps.length}
                         </span>
                         {expandedWeeks.includes(week.week) ? 
                           <ChevronDown size={20} className="text-gray-400" /> : 
@@ -369,8 +361,8 @@ const ResultsPage: React.FC = () => {
                     {expandedWeeks.includes(week.week) && (
                       <div className="px-6 pb-6">
                         <div className="space-y-3">
-                          {week.items.map((item, index) => {
-                            const itemId = `${week.week}-${item.title}`;
+                          {week.steps.map((step, index) => {
+                            const itemId = `${week.week}-${step.title}`;
                             const isCompleted = completedItems.has(itemId);
                             
                             return (
@@ -391,32 +383,45 @@ const ResultsPage: React.FC = () => {
                                   <div className="flex-1">
                                     <div className="flex items-start justify-between gap-3 mb-2">
                                       <h4 className={`font-medium ${isCompleted ? 'text-green-800 line-through' : 'text-gray-800'}`}>
-                                        {item.title}
+                                        {step.title}
                                       </h4>
                                       <div className="flex items-center gap-2">
-                                        <span className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium ${getTypeColor(item.type)}`}>
-                                          {getTypeIcon(item.type)}
-                                          {item.type}
+                                        <span className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium ${getTypeColor(step.type)}`}>
+                                          {getTypeIcon(step.type)}
+                                          {step.type}
                                         </span>
-                                        {item.duration && (
+                                        {step.timeEstimate && (
                                           <span className="text-xs text-gray-500 bg-white px-2 py-1 rounded-full">
-                                            {item.duration}
+                                            {step.timeEstimate}
                                           </span>
                                         )}
                                       </div>
                                     </div>
                                     <p className={`text-sm mb-3 ${isCompleted ? 'text-green-600' : 'text-gray-600'}`}>
-                                      {item.description}
+                                      {step.description}
                                     </p>
-                                    <a
-                                      href={item.url}
-                                      target="_blank"
-                                      rel="noopener noreferrer"
-                                      className="inline-flex items-center gap-2 px-3 py-1 bg-primary-blue text-white rounded-lg hover:bg-primary-blue-hover transition-colors text-sm font-medium"
-                                    >
-                                      Open Resource
-                                      <ExternalLink size={12} />
-                                    </a>
+                                    <div className="flex gap-2">
+                                      <a
+                                        href={step.href}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="inline-flex items-center gap-2 px-3 py-1 bg-primary-blue text-white rounded-lg hover:bg-primary-blue-hover transition-colors text-sm font-medium"
+                                      >
+                                        Reddit Discussion
+                                        <ExternalLink size={12} />
+                                      </a>
+                                      {step.resourceURL && (
+                                        <a
+                                          href={step.resourceURL}
+                                          target="_blank"
+                                          rel="noopener noreferrer"
+                                          className="inline-flex items-center gap-2 px-3 py-1 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors text-sm font-medium"
+                                        >
+                                          Find Resource
+                                          <ExternalLink size={12} />
+                                        </a>
+                                      )}
+                                    </div>
                                   </div>
                                 </div>
                               </div>
@@ -430,17 +435,19 @@ const ResultsPage: React.FC = () => {
               </div>
             </div>
 
-            {/* Helper Tip */}
-            <div className="bg-yellow-50 border-l-4 border-yellow-400 rounded-custom p-6 mb-8">
-              <div className="flex items-start gap-3">
-                <Lightbulb className="text-yellow-600 mt-1" size={20} />
-                <div>
-                  <p className="text-gray-700">
-                    <strong>✨ Remember:</strong> This plan is generated using Reddit wisdom. Everyone learns at their own pace — adjust as needed! Check off items as you complete them to track your progress.
-                  </p>
+            {/* Final Tip */}
+            {planData.tip && (
+              <div className="bg-yellow-50 border-l-4 border-yellow-400 rounded-custom p-6 mb-8">
+                <div className="flex items-start gap-3">
+                  <Lightbulb className="text-yellow-600 mt-1" size={20} />
+                  <div>
+                    <p className="text-gray-700">
+                      <strong>💡 Pro Tip:</strong> {planData.tip}
+                    </p>
+                  </div>
                 </div>
               </div>
-            </div>
+            )}
           </>
         )}
 
@@ -459,4 +466,4 @@ const ResultsPage: React.FC = () => {
   );
 };
 
-export default ResultsPage;
+export default NewResultsPage;

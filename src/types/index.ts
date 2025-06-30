@@ -46,3 +46,28 @@ export interface LearningGuide {
   weeklyPlan: WeeklyPlan[];
   tip: string;
 }
+
+// New types for Quick Insights mode
+export interface InsightSource {
+  title: string;
+  subreddit: string;
+  url: string;
+  upvotes: number;
+  summary: string;
+}
+
+export interface QuickInsights {
+  summary: string;
+  keyPoints: string[];
+  commonMistakes: string[];
+  recommendedResources: {
+    title: string;
+    description: string;
+    url: string;
+    type: 'Video' | 'Article' | 'Course' | 'Tool' | 'Community';
+  }[];
+  sources: InsightSource[];
+  nextSteps: string[];
+}
+
+export type SearchMode = 'study-plan' | 'quick-insights';
