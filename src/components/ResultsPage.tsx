@@ -466,4 +466,4 @@ const NewResultsPage: React.FC = () => {
   );
 };
 
-export default NewResultsPage;
+export default ResultsPage;
