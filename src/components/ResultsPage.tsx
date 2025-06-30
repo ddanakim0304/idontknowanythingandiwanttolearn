@@ -116,6 +116,16 @@ const ResultsPage: React.FC = () => {
     }
   };
 
+  const getResourceButtonText = (url: string) => {
+    if (url.includes('youtube.com')) {
+      return 'Search YouTube';
+    } else if (url.includes('google.com')) {
+      return 'Search Google';
+    } else {
+      return 'Find Resource';
+    }
+  };
+
   const filters = [
     { label: 'Last Week', param: 'time=7d' },
     { label: 'Beginner-Friendly', param: 'level=beginner' },
@@ -417,7 +427,7 @@ const ResultsPage: React.FC = () => {
                                           rel="noopener noreferrer"
                                           className="inline-flex items-center gap-2 px-3 py-1 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors text-sm font-medium"
                                         >
-                                          Find Resource
+                                          {getResourceButtonText(step.resourceURL)}
                                           <ExternalLink size={12} />
                                         </a>
                                       )}
