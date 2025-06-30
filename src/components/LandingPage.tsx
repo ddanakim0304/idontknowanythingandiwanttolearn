@@ -8,8 +8,7 @@ const LandingPage: React.FC = () => {
   const [searchMode, setSearchMode] = useState<SearchMode>('study-plan');
   const navigate = useNavigate();
 
-  const exampleTopics = ['Autodesk Maya', 'Korean', 'Python
-                         ', 'Playing Ukulele', 'Photography'];
+  const exampleTopics = ['Autodesk Maya', 'Korean', 'Python', 'Playing Ukulele', 'Photography'];
 
   const handleSearch = (query?: string) => {
     const searchTerm = query || searchQuery;
