@@ -47,7 +47,7 @@ export interface LearningGuide {
   tip: string;
 }
 
-// New types for Quick Insights mode
+// Types for Learning Insights mode
 export interface InsightSource {
   title: string;
   subreddit: string;
@@ -56,7 +56,7 @@ export interface InsightSource {
   summary: string;
 }
 
-export interface QuickInsights {
+export interface LearningInsights {
   summary: string;
   keyPoints: string[];
   commonMistakes: string[];
@@ -70,4 +70,4 @@ export interface QuickInsights {
   nextSteps: string[];
 }
 
-export type SearchMode = 'study-plan' | 'quick-insights';
+export type SearchMode = 'study-plan' | 'learning-insights';

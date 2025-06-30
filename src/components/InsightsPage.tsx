@@ -2,8 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Search, ArrowLeft, ExternalLink, Loader2, AlertCircle, TrendingUp, AlertTriangle, Lightbulb, ArrowRight, MessageCircle, ThumbsUp } from 'lucide-react';
 import { getRichRedditContextForTopic } from '../services/redditService';
-import { generateQuickInsights } from '../services/insightsService';
-import type { QuickInsights, ProgressUpdate } from '../types';
+import { generateLearningInsights } from '../services/insightsService';
+import type { LearningInsights, ProgressUpdate } from '../types';
 
 const InsightsPage: React.FC = () => {
   const [searchParams] = useSearchParams();
@@ -11,7 +11,7 @@ const InsightsPage: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState('');
   
   // State for API data
-  const [insightsData, setInsightsData] = useState<QuickInsights | null>(null);
+  const [insightsData, setInsightsData] = useState<LearningInsights | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [progress, setProgress] = useState<ProgressUpdate>({ message: '', percentage: 0 });
@@ -32,7 +32,7 @@ const InsightsPage: React.FC = () => {
     
     try {
       // Step 1: Get Reddit context
-      setProgress({ message: 'Gathering insights from Reddit communities...', percentage: 0 });
+      setProgress({ message: 'Gathering learning insights from Reddit communities...', percentage: 0 });
       const redditContext = await getRichRedditContextForTopic(topic, setProgress);
       
       if (!redditContext) {
@@ -40,15 +40,15 @@ const InsightsPage: React.FC = () => {
       }
 
       // Step 2: Generate insights
-      setProgress({ message: '🧠 AI is analyzing discussions and extracting key insights...', percentage: 90 });
-      const insights = await generateQuickInsights(topic, redditContext);
+      setProgress({ message: '🧠 AI is analyzing discussions and extracting learning insights...', percentage: 90 });
+      const insights = await generateLearningInsights(topic, redditContext);
       
       setInsightsData(insights);
-      setProgress({ message: '✅ Your insights are ready!', percentage: 100 });
+      setProgress({ message: '✅ Your learning insights are ready!', percentage: 100 });
       
     } catch (err) {
-      console.error('Error fetching insights:', err);
-      setError(err instanceof Error ? err.message : 'Could not generate insights – please try again.');
+      console.error('Error fetching learning insights:', err);
+      setError(err instanceof Error ? err.message : 'Could not generate learning insights – please try again.');
     } finally {
       setLoading(false);
     }
@@ -77,7 +77,7 @@ const InsightsPage: React.FC = () => {
       <div className="max-w-md mx-auto">
         <div className="mb-6">
           <Loader2 size={48} className="animate-spin text-primary-blue mx-auto mb-4" />
-          <h3 className="text-xl font-semibold text-gray-800 mb-2">Analyzing Reddit Discussions</h3>
+          <h3 className="text-xl font-semibold text-gray-800 mb-2">Analyzing Learning Discussions</h3>
           <p className="text-gray-600 mb-4">{progress.message}</p>
         </div>
         
@@ -89,7 +89,7 @@ const InsightsPage: React.FC = () => {
         </div>
         
         <p className="text-sm text-gray-500">
-          Extracting the best advice and insights from community discussions...
+          Extracting the best learning advice and insights from community discussions...
         </p>
       </div>
     </div>
@@ -151,16 +151,16 @@ const InsightsPage: React.FC = () => {
         {/* Results Header */}
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-gray-800 mb-2">
-            Quick Insights: <span className="text-primary-blue">{query}</span>
+            Learning Insights: <span className="text-primary-blue">{query}</span>
           </h1>
           {loading && (
             <div className="flex items-center gap-2 text-gray-600">
               <Loader2 size={16} className="animate-spin" />
-              <span>Analyzing Reddit discussions for key insights...</span>
+              <span>Analyzing Reddit discussions for learning insights...</span>
             </div>
           )}
           {!loading && !error && insightsData && (
-            <p className="text-gray-600">Key insights and advice from Reddit communities 🎯</p>
+            <p className="text-gray-600">Essential learning insights and advice from Reddit communities 🎯</p>
           )}
         </div>
 
@@ -180,18 +180,18 @@ const InsightsPage: React.FC = () => {
                   💡
                 </div>
                 <div>
-                  <h2 className="text-xl font-semibold text-gray-800 mb-2">Summary</h2>
+                  <h2 className="text-xl font-semibold text-gray-800 mb-2">Learning Summary</h2>
                   <p className="text-gray-700 leading-relaxed text-lg">{insightsData.summary}</p>
                 </div>
               </div>
             </div>
 
             <div className="grid md:grid-cols-2 gap-6 mb-8">
-              {/* Key Points */}
+              {/* Key Learning Points */}
               <div className="bg-white rounded-custom p-6 shadow-gentle">
                 <div className="flex items-center gap-2 mb-4">
                   <TrendingUp className="text-green-600" size={20} />
-                  <h3 className="text-lg font-semibold text-gray-800">Key Points</h3>
+                  <h3 className="text-lg font-semibold text-gray-800">Key Learning Points</h3>
                 </div>
                 <ul className="space-y-3">
                   {insightsData.keyPoints.map((point, index) => (
@@ -205,11 +205,11 @@ const InsightsPage: React.FC = () => {
                 </ul>
               </div>
 
-              {/* Common Mistakes */}
+              {/* Common Learning Mistakes */}
               <div className="bg-white rounded-custom p-6 shadow-gentle">
                 <div className="flex items-center gap-2 mb-4">
                   <AlertTriangle className="text-orange-600" size={20} />
-                  <h3 className="text-lg font-semibold text-gray-800">Common Mistakes</h3>
+                  <h3 className="text-lg font-semibold text-gray-800">Common Learning Mistakes</h3>
                 </div>
                 <ul className="space-y-3">
                   {insightsData.commonMistakes.map((mistake, index) => (
@@ -224,11 +224,11 @@ const InsightsPage: React.FC = () => {
               </div>
             </div>
 
-            {/* Recommended Resources */}
+            {/* Recommended Learning Resources */}
             <div className="bg-white rounded-custom p-6 mb-8 shadow-gentle">
               <div className="flex items-center gap-2 mb-4">
                 <Lightbulb className="text-purple-600" size={20} />
-                <h3 className="text-lg font-semibold text-gray-800">Recommended Resources</h3>
+                <h3 className="text-lg font-semibold text-gray-800">Recommended Learning Resources</h3>
               </div>
               <div className="grid md:grid-cols-2 gap-4">
                 {insightsData.recommendedResources.map((resource, index) => (
@@ -252,11 +252,11 @@ const InsightsPage: React.FC = () => {
               </div>
             </div>
 
-            {/* Next Steps */}
+            {/* Next Learning Steps */}
             <div className="bg-white rounded-custom p-6 mb-8 shadow-gentle">
               <div className="flex items-center gap-2 mb-4">
                 <ArrowRight className="text-blue-600" size={20} />
-                <h3 className="text-lg font-semibold text-gray-800">Next Steps</h3>
+                <h3 className="text-lg font-semibold text-gray-800">Next Learning Steps</h3>
               </div>
               <div className="space-y-3">
                 {insightsData.nextSteps.map((step, index) => (

@@ -1,5 +1,5 @@
 import { GoogleGenerativeAI } from "@google/generative-ai";
-import type { QuickInsights } from '../types';
+import type { LearningInsights } from '../types';
 
 if (!import.meta.env.VITE_GEMINI_API_KEY) {
   throw new Error("VITE_GEMINI_API_KEY environment variable is not set.");
@@ -8,7 +8,7 @@ if (!import.meta.env.VITE_GEMINI_API_KEY) {
 const genAI = new GoogleGenerativeAI(import.meta.env.VITE_GEMINI_API_KEY);
 
 const INSIGHTS_PROMPT_TEMPLATE = `
-You are an AI research assistant that synthesizes advice from Reddit discussions into actionable insights. Your task is to analyze Reddit posts and comments about a specific topic and create a comprehensive summary similar to what Perplexity AI would provide.
+You are an AI learning advisor that synthesizes advice from Reddit discussions into actionable learning insights. Your task is to analyze Reddit posts and comments about a specific topic and create a comprehensive learning summary with key insights, common pitfalls, and recommended resources.
 
 Topic: "{{topic}}"
 
@@ -18,32 +18,32 @@ Here is the raw data from Reddit posts and comments in JSON format:
 --- END OF REDDIT DATA (JSON) ---
 
 **Your Task:**
-1. **Create a Comprehensive Summary**: Write a 3-4 sentence overview of the most important advice for beginners
-2. **Extract Key Points**: Identify 4-6 essential points that beginners should know
-3. **Common Mistakes**: List 3-4 mistakes that beginners frequently make based on the discussions
-4. **Recommended Resources**: Extract and categorize the most frequently mentioned resources
-5. **Source Attribution**: Create source entries for the most valuable posts
-6. **Next Steps**: Provide 3-4 actionable next steps for someone just starting
+1. **Create a Learning Summary**: Write a 3-4 sentence overview of the most important advice for beginners learning this topic
+2. **Extract Key Learning Points**: Identify 4-6 essential insights that beginners should know when starting to learn this topic
+3. **Common Learning Mistakes**: List 3-4 mistakes that beginners frequently make based on the discussions
+4. **Recommended Learning Resources**: Extract and categorize the most frequently mentioned learning resources
+5. **Source Attribution**: Create source entries for the most valuable posts that contributed to these insights
+6. **Next Learning Steps**: Provide 3-4 actionable next steps for someone just starting to learn this topic
 
 **Output Format:**
 Your response MUST be a valid JSON object with this exact structure:
 {
-  "summary": "A comprehensive 3-4 sentence summary of the key advice for learning this topic.",
+  "summary": "A comprehensive 3-4 sentence summary of the key learning advice for this topic.",
   "keyPoints": [
-    "Essential point 1 that beginners should understand",
-    "Essential point 2 about getting started",
-    "Essential point 3 about best practices",
-    "Essential point 4 about resources or tools"
+    "Essential learning insight 1 that beginners should understand",
+    "Essential learning insight 2 about getting started effectively",
+    "Essential learning insight 3 about best learning practices",
+    "Essential learning insight 4 about resources or learning methods"
   ],
   "commonMistakes": [
-    "Common mistake 1 that beginners make",
-    "Common mistake 2 to avoid",
-    "Common mistake 3 that wastes time"
+    "Common learning mistake 1 that beginners make",
+    "Common learning mistake 2 to avoid when starting",
+    "Common learning mistake 3 that wastes learning time"
   ],
   "recommendedResources": [
     {
-      "title": "Resource name (e.g., 'Python.org Official Tutorial')",
-      "description": "Brief description of why this resource is recommended",
+      "title": "Learning resource name (e.g., 'Python.org Official Tutorial')",
+      "description": "Brief description of why this resource is recommended for learning",
       "url": "https://www.youtube.com/results?search_query=resource+name+for+beginners",
       "type": "Video"
     }
@@ -54,28 +54,29 @@ Your response MUST be a valid JSON object with this exact structure:
       "subreddit": "r/subredditname",
       "url": "https://www.reddit.com/r/subreddit/comments/...",
       "upvotes": 0,
-      "summary": "Brief summary of what this post contributed to the insights"
+      "summary": "Brief summary of what learning insights this post contributed"
     }
   ],
   "nextSteps": [
-    "Actionable step 1 to get started immediately",
-    "Actionable step 2 for the first week",
-    "Actionable step 3 for building momentum"
+    "Actionable learning step 1 to get started immediately",
+    "Actionable learning step 2 for the first week of learning",
+    "Actionable learning step 3 for building learning momentum"
   ]
 }
 
 **Important Guidelines:**
 - Base all insights ONLY on the provided Reddit data
+- Focus on learning-specific advice and insights
 - For recommendedResources, create search URLs for YouTube (videos) or Google (articles/docs)
-- Make search queries specific and beginner-focused
+- Make search queries specific and beginner-focused for learning
 - Include actual Reddit post URLs in sources using the permalink data
-- Focus on practical, actionable advice
-- Prioritize beginner-friendly information
+- Focus on practical, actionable learning advice
+- Prioritize beginner-friendly learning information
 
 Do not include any introductory text, just the raw JSON object.
 `;
 
-export const generateQuickInsights = async (topic: string, redditContext: string): Promise<QuickInsights> => {
+export const generateLearningInsights = async (topic: string, redditContext: string): Promise<LearningInsights> => {
   const prompt = INSIGHTS_PROMPT_TEMPLATE
     .replace(/{{topic}}/g, topic)
     .replace('{{redditContext}}', redditContext);
@@ -99,7 +100,7 @@ export const generateQuickInsights = async (topic: string, redditContext: string
       jsonStr = match[2].trim();
     }
     
-    const parsedData = JSON.parse(jsonStr) as QuickInsights;
+    const parsedData = JSON.parse(jsonStr) as LearningInsights;
     
     if (!parsedData.summary || !Array.isArray(parsedData.keyPoints) || !Array.isArray(parsedData.sources)) {
         throw new Error("AI response is missing required fields.");
@@ -108,10 +109,10 @@ export const generateQuickInsights = async (topic: string, redditContext: string
     return parsedData;
 
   } catch (error) {
-    console.error("Error generating quick insights:", error);
+    console.error("Error generating learning insights:", error);
     if (error instanceof Error && error.message.includes('JSON')) {
         throw new Error("The AI returned a response that we couldn't understand. Please try a different topic or try again.");
     }
-    throw new Error("Could not generate insights for this topic. The AI might be busy, please try again in a moment.");
+    throw new Error("Could not generate learning insights for this topic. The AI might be busy, please try again in a moment.");
   }
 };

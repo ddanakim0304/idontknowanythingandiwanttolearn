@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Search, Dice1, BookOpen, Zap } from 'lucide-react';
+import { Search, Dice1, BookOpen, Lightbulb } from 'lucide-react';
 import type { SearchMode } from '../types';
 
 const LandingPage: React.FC = () => {
@@ -55,15 +55,15 @@ const LandingPage: React.FC = () => {
               Study Plan
             </button>
             <button
-              onClick={() => setSearchMode('quick-insights')}
+              onClick={() => setSearchMode('learning-insights')}
               className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
-                searchMode === 'quick-insights'
+                searchMode === 'learning-insights'
                   ? 'bg-white text-primary-blue shadow-gentle'
                   : 'text-gray-600 hover:text-gray-800'
               }`}
             >
-              <Zap size={16} />
-              Quick Insights
+              <Lightbulb size={16} />
+              Learning Insights
             </button>
           </div>
 
@@ -75,7 +75,7 @@ const LandingPage: React.FC = () => {
               </p>
             ) : (
               <p className="text-gray-600 text-sm">
-                Get instant insights, key points, and curated advice from Reddit communities
+                Get key insights, essential advice, and curated learning resources from Reddit communities
               </p>
             )}
           </div>
@@ -89,7 +89,7 @@ const LandingPage: React.FC = () => {
               placeholder={
                 searchMode === 'study-plan' 
                   ? "I don't know anything and I want to learn…"
-                  : "What do you want quick insights about?"
+                  : "What do you want learning insights about?"
               }
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
