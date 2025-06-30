@@ -6,7 +6,7 @@ const LandingPage: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const navigate = useNavigate();
 
-  const exampleTopics = ['Autodesk Maya', 'Python', 'Cooking', 'Playing Ukulele', 'Photography', 'Spanish'];
+  const exampleTopics = ['Autodesk Maya', 'Python', 'Cooking', 'Playing Ukulele', 'Photography'];
 
   const handleSearch = (query?: string) => {
     const searchTerm = query || searchQuery;
