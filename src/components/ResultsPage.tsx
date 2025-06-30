@@ -294,15 +294,6 @@ const ResultsPage: React.FC = () => {
           <h1 className="text-3xl font-bold text-gray-800 mb-2">
             Learning: <span className="text-primary-blue">{query}</span>
           </h1>
-          {loading && (
-            <div className="flex items-center gap-2 text-gray-600">
-              <Loader2 size={16} className="animate-spin" />
-              <span>Generating your personalized learning plan...</span>
-            </div>
-          )}
-          {!loading && !error && planData && (
-            <p className="text-gray-600">Your personalized {planDuration}-week learning roadmap 🎯</p>
-          )}
         </div>
 
         {/* Loading State */}
