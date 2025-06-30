@@ -30,7 +30,22 @@ const LandingPage: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center px-4">
+    <div className="min-h-screen flex flex-col items-center justify-center px-4 relative">
+      {/* Bolt.new Badge */}
+      <a
+        href="https://bolt.new/"
+        target="_blank"
+        rel="noopener noreferrer"
+        className="fixed top-4 right-4 z-50 transition-transform hover:scale-105"
+        aria-label="Made with Bolt.new"
+      >
+        <img
+          src="/white_circle_360x360.png"
+          alt="Made with Bolt.new"
+          className="w-12 h-12 md:w-16 md:h-16 drop-shadow-lg"
+        />
+      </a>
+
       <div className="max-w-2xl mx-auto text-center">
         {/* Logo/Title */}
         <div className="mb-12">
