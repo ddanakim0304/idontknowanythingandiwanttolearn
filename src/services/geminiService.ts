@@ -25,7 +25,6 @@ Here is the raw data from the top Reddit posts, in a JSON array format. Each ele
 4.  **Generate Resource Links (CRITICAL):**
     *   Populate the \`sources\` array with the unique subreddit names found in the data (e.g., "r/learnprogramming").
     *   For each step in your plan, the \`href\` field **MUST** be the full URL to the Reddit post it was derived from. Construct this by prepending "https://www.reddit.com" to the post's 'permalink' value (e.g., "https://www.reddit.com/r/learnprogramming/comments/...").
-    *   **IMPORTANT: Diversify your sources** - Try to use different Reddit posts for different steps. Don't link multiple steps to the same Reddit discussion unless absolutely necessary. Spread the recommendations across various posts and comments to give users access to diverse perspectives and advice.
     *   **Do not extract direct links from comments or posts.** Instead, if a step involves an external resource (like a video, article, or tutorial series), create a YouTube or Google search link for it in the \`resourceURL\` field.
     *   **For video content:** Create a YouTube search link. For example, if the advice is "watch a crash course on Figma", the \`resourceURL\` should be "https://www.youtube.com/results?search_query=figma+crash+course+for+beginners".
     *   **For non-video content (articles, docs):** Create a Google search link. Example: "https://www.google.com/search?q=learn+javascript+MDN+docs".
@@ -67,7 +66,6 @@ Your response MUST be a valid JSON object and nothing else. It must follow this 
 Details for the plan:
 - The number of weeks in "weeklyPlan" must match the user's request.
 - Base your plan ONLY on the provided Reddit data.
-- **DIVERSIFY SOURCES**: Make sure to reference different Reddit posts across your weekly plan steps. Avoid clustering multiple steps around the same discussion thread.
 
 Do not include any introductory text, just the raw JSON object.
 `;
@@ -118,12 +116,6 @@ export const getRelevantSubreddits = async (topic: string): Promise<string[]> =>
 
     } catch (error) {
         console.error("Error generating relevant subreddits:", error);
-        
-        // Check for quota exceeded error
-        if (error instanceof Error && (error.message.includes('429') || error.message.includes('quota') || error.message.includes('exceeded your current quota'))) {
-            throw new Error("You've reached your daily limit for AI requests. Please check your Google AI Studio account at https://aistudio.google.com/ to view your quota and billing details, or try again tomorrow.");
-        }
-        
         return [];
     }
 };
@@ -164,12 +156,6 @@ export const generateLearningGuide = async (topic: string, weeks: number, hoursP
 
   } catch (error) {
     console.error("Error generating learning guide:", error);
-    
-    // Check for quota exceeded error
-    if (error instanceof Error && (error.message.includes('429') || error.message.includes('quota') || error.message.includes('exceeded your current quota'))) {
-        throw new Error("You've reached your daily limit for AI requests. Please check your Google AI Studio account at https://aistudio.google.com/ to view your quota and billing details, or try again tomorrow.");
-    }
-    
     if (error instanceof Error && error.message.includes('JSON')) {
         throw new Error("The AI returned a response that we couldn't understand. Please try a different topic or try again.");
     }
